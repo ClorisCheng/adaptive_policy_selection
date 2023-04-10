@@ -102,27 +102,34 @@ def main():
     dt = 0.01  # Discretization time interval.
     N = 10     # Number of step-changes in mass.
     # Number of timesteps per step-change in mass.
-    if os.getenv("FAST").lower() == "true":
-        T = 100
-    else:
-        T = 10000
+    # if os.getenv("FAST").lower() == "true":
+    #     T = 100
+    # else:
+    #     T = 10000
+    T = 100
 
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("outpath", type=str)
-    parser.add_argument("--walk", action="store_true")
-    args = parser.parse_args()
+
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("outpath", type=str, default="./results/pendulum.npz")
+    # parser.add_argument("--walk", action="store_true", default=False)
+    # args = parser.parse_args()
+    # print(args)
+
+    outpath = "./results/pendulum.npz"
+    walk = False
 
     buf_len = 10*int(1.0 / dt)
     rate = 1e-2
     estimator = GAPSEstimator(buffer_length=buf_len)
-    theta = torch.tensor(pendulum_gains_lqrd(1.0, 1.0, dt))
+    theta = torch.tensor(pendulum_gains_lqrd(1.0, 1.0, dt)) # torch.tensor(1, 2)
     prev_dgdx = None
     prev_dgdu = None
 
     np.random.seed(100)
     masses = 2 ** np.random.uniform(-1, 1, size=N)
-    if args.walk:
+    # if args.walk:
+    if walk:
         disturbance = ulprocess(seed=0, noise=0.5 * dt, gamma=0.95)
     else:
         disturbance = ulprocess(seed=0, noise=8.0 * dt, gamma=0.0)
@@ -186,7 +193,8 @@ def main():
     # Save data.
     x_log = np.stack(x_log)
     np.savez(
-        args.outpath,
+        # args.outpath,
+        outpath,
         dt=dt,
         x_log=x_log,
         theta_log_LQ=np.stack(theta_log_LQ),
